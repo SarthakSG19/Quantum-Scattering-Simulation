@@ -1,0 +1,87 @@
+import tkinter as tk
+from tkinter import ttk
+from qiskit import QuantumCircuit
+
+def create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift):
+    q_c = QuantumCircuit(total_qubits)
+
+    for i in range(total_qubits):
+        q_c.h(i)
+
+    q_c.p(phase_shift, obstacle_qubit)
+
+    def q_f_t(qc, n):
+        try:
+            for a in range(n):
+                for b in range(a):
+                    qc.cp(3.14 / (2 ** (a - b)), b, a)
+                qc.h(a)
+        except Exception as e:
+            print(f"Error in QFT Function: {e}")
+
+        return qc
+
+    q_f_t(q_c, total_qubits)
+    q_c.measure_all()
+    return q_c
+
+def update_circuit():
+    try:
+        total_qubits = int(qubit_entry.get())
+        obstacle_qubit = int(barrier_entry.get())
+        phase_shift = float(phase_entry.get())
+
+        qc = create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift)
+
+        circuit_text = qc.draw(output='text')
+
+        text_display.config(state=tk.NORMAL)
+        text_display.delete("1.0", tk.END)
+        text_display.insert(tk.END, circuit_text)
+        text_display.config(state=tk.DISABLED)
+
+    except Exception as e:
+        text_display.config(state=tk.NORMAL)
+        text_display.delete("1.0", tk.END)
+        text_display.insert(tk.END, f"Error: {e}")
+        text_display.config(state=tk.DISABLED)
+
+root = tk.Tk()
+root.title("Quantum Scattering Simulation GUI")
+root.geometry("800x500")
+
+ttk.Label(root, text="Number of Qubits:").pack()
+qubit_entry = ttk.Entry(root)
+qubit_entry.insert(0, "5")
+qubit_entry.pack()
+
+ttk.Label(root, text="Barrier Position:").pack()
+barrier_entry = ttk.Entry(root)
+barrier_entry.insert(0, "3")
+barrier_entry.pack()
+
+ttk.Label(root, text="Barrier Phase:").pack()
+phase_entry = ttk.Entry(root)
+phase_entry.insert(0, "1.57")
+phase_entry.pack()
+
+ttk.Button(root, text="Update Circuit", command=update_circuit).pack()
+
+frame = ttk.Frame(root)
+frame.pack(expand=True, fill=tk.BOTH)
+
+text_display = tk.Text(frame, font=("Courier", 10), wrap=tk.NONE)
+text_display.config(state=tk.DISABLED)
+
+scroll_y = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=text_display.yview)
+scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+
+scroll_x = ttk.Scrollbar(root, orient=tk.HORIZONTAL, command=text_display.xview)
+scroll_x.pack(fill=tk.X)
+
+text_display.pack(expand=True, fill=tk.BOTH)
+text_display.config(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+
+update_circuit()
+
+root.mainloop()
