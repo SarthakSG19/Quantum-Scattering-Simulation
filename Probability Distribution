@@ -29,20 +29,20 @@ def create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift):
 
 def update_plot():
     try:
-        total_qubits = int(num_qubits_entry.get())
-        obstacle_qubit = int(barrier_pos_entry.get())
-        phase_shift = float(barrier_phase_entry.get())
+        total_qb = int(num_qb_entry.get())
+        obstacle_qb = int(barrier_pos_entry.get())
+        phase_sft = float(barrier_ph_entry.get())
 
-        qc = create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift)
+        qc = create_scattering_circuit(total_qb, obstacle_qb, phase_sft)
 
         state = Statevector.from_instruction(qc)
         probabilities = np.abs(state.data) ** 2
 
-        state_labels = [format(i, f'0{total_qubits}b') for i in range(len(probabilities))]
+        state_lbs = [format(i, f'0{total_qb}b') for i in range(len(probabilities))]
 
-        sorted_indices = np.argsort(probabilities)[::-1]
-        sorted_states = [state_labels[i] for i in sorted_indices]
-        sorted_probs = probabilities[sorted_indices]
+        sorted_indc = np.argsort(probabilities)[::-1]
+        sorted_states = [state_lbs[i] for i in sorted_indc]
+        sorted_probs = probabilities[sorted_indc]
 
         plt.figure(figsize=(10, 5))
         plt.bar(sorted_states, sorted_probs, color='blue')
@@ -62,9 +62,9 @@ root.title("Quantum Scattering Simulator")
 root.geometry("400x300")  # Tweaked for better UI fit
 
 tk.Label(root, text="Number of Qubits:").pack()
-num_qubits_entry = ttk.Entry(root)
-num_qubits_entry.pack()
-num_qubits_entry.insert(0, "5")  # Default value
+num_qb_entry = ttk.Entry(root)
+num_qb_entry.pack()
+num_qb_entry.insert(0, "5")  # Default value
 
 tk.Label(root, text="Barrier Position:").pack()
 barrier_pos_entry = ttk.Entry(root)
@@ -72,9 +72,9 @@ barrier_pos_entry.pack()
 barrier_pos_entry.insert(0, "3")
 
 tk.Label(root, text="Barrier Phase:").pack()
-barrier_phase_entry = ttk.Entry(root)
-barrier_phase_entry.pack()
-barrier_phase_entry.insert(0, "1.57")
+barrier_ph_entry = ttk.Entry(root)
+barrier_ph_entry.pack()
+barrier_ph_entry.insert(0, "1.57")
 
 plot_button = ttk.Button(root, text="Generate Graph", command=update_plot)
 plot_button.pack(pady=10)
