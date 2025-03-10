@@ -2,13 +2,13 @@ import tkinter as tk
 from tkinter import ttk
 from qiskit import QuantumCircuit
 
-def create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift):
-    q_c = QuantumCircuit(total_qubits)
+def create_scattering_circuit(total_qb, obstacle_qb, phase_sft):
+    q_c = QuantumCircuit(total_qb)
 
-    for i in range(total_qubits):
+    for i in range(total_qb):
         q_c.h(i)
 
-    q_c.p(phase_shift, obstacle_qubit)
+    q_c.p(phase_sft, obstacle_qb)
 
     def q_f_t(qc, n):
         try:
@@ -21,66 +21,66 @@ def create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift):
 
         return qc
 
-    q_f_t(q_c, total_qubits)
+    q_f_t(q_c, total_qb)
     q_c.measure_all()
     return q_c
 
 def update_circuit():
     try:
-        total_qubits = int(qubit_entry.get())
-        obstacle_qubit = int(barrier_entry.get())
-        phase_shift = float(phase_entry.get())
+        total_qb = int(qb_entry.get())
+        obstacle_qb = int(br_entry.get())
+        phase_sft = float(ph_entry.get())
 
-        qc = create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift)
+        qc = create_scattering_circuit(total_qb, obstacle_qb, phase_sft)
 
-        circuit_text = qc.draw(output='text')
+        cr_tx = qc.draw(output='text')
 
-        text_display.config(state=tk.NORMAL)
-        text_display.delete("1.0", tk.END)
-        text_display.insert(tk.END, circuit_text)
-        text_display.config(state=tk.DISABLED)
+        tx_dis.config(state=tk.NORMAL)
+        tx_dis.delete("1.0", tk.END)
+        tx_dis.insert(tk.END, cr_tx)
+        tx_dis.config(state=tk.DISABLED)
 
     except Exception as e:
-        text_display.config(state=tk.NORMAL)
-        text_display.delete("1.0", tk.END)
-        text_display.insert(tk.END, f"Error: {e}")
-        text_display.config(state=tk.DISABLED)
+        tx_dis.config(state=tk.NORMAL)
+        tx_dis.delete("1.0", tk.END)
+        tx_dis.insert(tk.END, f"Error: {e}")
+        tx_dis.config(state=tk.DISABLED)
 
 root = tk.Tk()
 root.title("Quantum Scattering Simulation GUI")
 root.geometry("800x500")
 
 ttk.Label(root, text="Number of Qubits:").pack()
-qubit_entry = ttk.Entry(root)
-qubit_entry.insert(0, "5")
-qubit_entry.pack()
+qb_entry = ttk.Entry(root)
+qb_entry.insert(0, "5")
+qb_entry.pack()
 
 ttk.Label(root, text="Barrier Position:").pack()
-barrier_entry = ttk.Entry(root)
-barrier_entry.insert(0, "3")
-barrier_entry.pack()
+br_entry = ttk.Entry(root)
+br_entry.insert(0, "3")
+br_entry.pack()
 
 ttk.Label(root, text="Barrier Phase:").pack()
-phase_entry = ttk.Entry(root)
-phase_entry.insert(0, "1.57")
-phase_entry.pack()
+ph_entry = ttk.Entry(root)
+ph_entry.insert(0, "1.57")
+ph_entry.pack()
 
 ttk.Button(root, text="Update Circuit", command=update_circuit).pack()
 
-frame = ttk.Frame(root)
-frame.pack(expand=True, fill=tk.BOTH)
+fr = ttk.Frame(root)
+fr.pack(expand=True, fill=tk.BOTH)
 
-text_display = tk.Text(frame, font=("Courier", 10), wrap=tk.NONE)
-text_display.config(state=tk.DISABLED)
+tx_dis = tk.Text(fr, font=("Courier", 10), wrap=tk.NONE)
+tx_dis.config(state=tk.DISABLED)
 
-scroll_y = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=text_display.yview)
-scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+s_y = ttk.Scrollbar(fr, orient=tk.VERTICAL, command=tx_dis.yview)
+s_y.pack(side=tk.RIGHT, fill=tk.Y)
 
-scroll_x = ttk.Scrollbar(root, orient=tk.HORIZONTAL, command=text_display.xview)
-scroll_x.pack(fill=tk.X)
+s_x = ttk.Scrollbar(root, orient=tk.HORIZONTAL, command=tx_dis.xview)
+s_x.pack(fill=tk.X)
 
-text_display.pack(expand=True, fill=tk.BOTH)
-text_display.config(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+tx_dis.pack(expand=True, fill=tk.BOTH)
+tx_dis.config(yscrollcommand=s_y.set, xscrollcommand=s_x.set)
 
 update_circuit()
 
