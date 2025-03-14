@@ -1,82 +1,113 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
 import tkinter as tk
 from tkinter import ttk
+import matplotlib.pyplot as plt
+import numpy as np
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
 
-def create_scattering_circuit(total_qubits, obstacle_qubit, phase_shift):
-    q_c = QuantumCircuit(total_qubits)
+def scattering_circuit(num_qb, barrier_qb, ph_sft):
+    quantum_circuit = QuantumCircuit(num_qb)
 
-    for q in range(total_qubits):
-        q_c.h(q)
+    for i in range(num_qb):
+        quantum_circuit.h(i)
 
-    q_c.p(phase_shift, obstacle_qubit)
+    quantum_circuit.p(ph_sft, barrier_qb)
 
-    def q_f_t(qc, n):
+    def qft(qc, n):
         try:
-            for a in range(n):
-                for b in range(a):
-                    qc.cp(np.pi / (2 ** (a - b)), a, b)
-                qc.h(a)
+            for j in range(n):
+                for k in range(j):
+                    qc.cp(np.pi / (2 ** (j - k)), k, j)
+                qc.h(j)
         except Exception as e:
-            print(f"Error in QFT: {e}")
-
+            print(f"QFT Error: {e}")
         return qc
 
-    q_f_t(q_c, total_qubits)
-    return q_c
+    qft(quantum_circuit, num_qb)
 
-def update_plot():
+    return quantum_circuit
+
+def marginal_prob(qc):
+    statevector = Statevector.from_instruction(qc)
+    probs = np.abs(statevector.data) ** 2
+
+    num_qubits = int(np.log2(len(probs)))
+
+
+    qubit_probs = {q: [0, 0] for q in range(num_qubits)}
+
+
+    for state_index, prob in enumerate(probs):
+        bin_state = bin(state_index)[2:].zfill(num_qubits)
+
+        for qubit in range(num_qubits):
+            if bin_state[qubit] == '0':
+                qubit_probs[qubit][0] += prob
+            else:
+                qubit_probs[qubit][1] += prob
+
+    return qubit_probs
+
+def qb_probabilities(qb_probs):
+    qubits = list(qb_probs.keys())
+    p_zeros = [qb_probs[q][0] for q in qubits]
+    p_ones = [qb_probs[q][1] for q in qubits]
+
+    width = 0.35
+
+    x = np.arange(len(qubits))
+
+    plt.figure(figsize=(10, 5))
+    plt.bar(x - width / 2, p_zeros, width, label="Reflection ( |0⟩ State )", color="skyblue")
+    plt.bar(x + width / 2, p_ones, width, label="Transmission ( |1⟩ State )", color="orange")
+
+    plt.xlabel("Qubits")
+    plt.ylabel("Probability")
+    plt.title("Quantum Scattering Probability Distribution")
+    plt.xticks(x, [f"Qubit {q}" for q in qubits])
+    plt.legend()
+    plt.show()
+
+def update_circuit():
     try:
-        total_qb = int(num_qb_entry.get())
-        obstacle_qb = int(barrier_pos_entry.get())
-        phase_sft = float(barrier_ph_entry.get())
+        num_qubits = int(qb_entry.get())
+        barrier_qubit = int(br_entry.get())
+        phase_shift = float(ph_entry.get())
 
-        qc = create_scattering_circuit(total_qb, obstacle_qb, phase_sft)
+        if barrier_qubit >= num_qubits:
+            print("Error: Barrier qubit index is out of range!")
+            return
 
-        state = Statevector.from_instruction(qc)
-        probabilities = np.abs(state.data) ** 2
+        qc = scattering_circuit(num_qubits, barrier_qubit, phase_shift)
 
-        state_lbs = [format(i, f'0{total_qb}b') for i in range(len(probabilities))]
+        qubit_probs = marginal_prob(qc)
 
-        sorted_indc = np.argsort(probabilities)[::-1]
-        sorted_states = [state_lbs[i] for i in sorted_indc]
-        sorted_probs = probabilities[sorted_indc]
+        qb_probabilities(qubit_probs)
 
-        plt.figure(figsize=(10, 5))
-        plt.bar(sorted_states, sorted_probs, color='blue')
-        plt.xlabel("Quantum State")
-        plt.ylabel("Probability")
-        plt.title("Quantum State Probability Distribution")
-        plt.xticks(rotation=90)
-        plt.grid(axis='y', linestyle='--', alpha=0.7)
-
-        plt.show()
-
+    except ValueError:
+        print("Error: Please enter valid numerical values for all inputs.")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Unexpected Error: {e}")
 
 root = tk.Tk()
-root.title("Quantum Scattering Simulator")
-root.geometry("400x300")  # Tweaked for better UI fit
+root.title("Quantum Scattering Probability Distribution")
+root.geometry("400x200")
 
-tk.Label(root, text="Number of Qubits:").pack()
-num_qb_entry = ttk.Entry(root)
-num_qb_entry.pack()
-num_qb_entry.insert(0, "5")  # Default value
+ttk.Label(root, text="Number of Qubits:").pack()
+qb_entry = ttk.Entry(root)
+qb_entry.insert(0, "5")
+qb_entry.pack()
 
-tk.Label(root, text="Barrier Position:").pack()
-barrier_pos_entry = ttk.Entry(root)
-barrier_pos_entry.pack()
-barrier_pos_entry.insert(0, "3")
+ttk.Label(root, text="Barrier Position:").pack()
+br_entry = ttk.Entry(root)
+br_entry.insert(0, "3")
+br_entry.pack()
 
-tk.Label(root, text="Barrier Phase:").pack()
-barrier_ph_entry = ttk.Entry(root)
-barrier_ph_entry.pack()
-barrier_ph_entry.insert(0, "1.57")
+ttk.Label(root, text="Barrier Phase:").pack()
+ph_entry = ttk.Entry(root)
+ph_entry.insert(0, "1.57")
+ph_entry.pack()
 
-plot_button = ttk.Button(root, text="Generate Graph", command=update_plot)
-plot_button.pack(pady=10)
+ttk.Button(root, text="Generate Probability Distribution", command=update_circuit).pack()
 
 root.mainloop()
