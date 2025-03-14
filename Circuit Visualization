@@ -2,15 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from qiskit import QuantumCircuit
 
-def create_scattering_circuit(total_qb, obstacle_qb, phase_sft):
-    q_c = QuantumCircuit(total_qb)
+def scattering_circuit(num_qb, barrier_qb, phase_sft):
+    q_c = QuantumCircuit(num_qb)
 
-    for i in range(total_qb):
+    for i in range(num_qb):
         q_c.h(i)
+        
+    q_c.p(phase_sft, barrier_qb)
 
-    q_c.p(phase_sft, obstacle_qb)
-
-    def q_f_t(qc, n):
+    def qft(qc, n):
         try:
             for a in range(n):
                 for b in range(a):
@@ -21,7 +21,7 @@ def create_scattering_circuit(total_qb, obstacle_qb, phase_sft):
 
         return qc
 
-    q_f_t(q_c, total_qb)
+    qft(q_c, num_qb)
     q_c.measure_all()
     return q_c
 
@@ -31,7 +31,7 @@ def update_circuit():
         obstacle_qb = int(br_entry.get())
         phase_sft = float(ph_entry.get())
 
-        qc = create_scattering_circuit(total_qb, obstacle_qb, phase_sft)
+        qc = scattering_circuit(total_qb, obstacle_qb, phase_sft)
 
         cr_tx = qc.draw(output='text')
 
