@@ -7,7 +7,7 @@ def scattering_circuit(num_qb, barrier_qb, phase_sft):
 
     for i in range(num_qb):
         q_c.h(i)
-        
+
     q_c.p(phase_sft, barrier_qb)
 
     def qft(qc, n):
