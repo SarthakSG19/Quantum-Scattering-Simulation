@@ -58,10 +58,10 @@ def qb_probabilities(qb_probs):
     x = np.arange(len(qubits))
 
     plt.figure(figsize=(10, 5))
-    plt.bar(x - width / 2, p_zeros, width, label="Reflection ( |0⟩ State )", color="skyblue")
-    plt.bar(x + width / 2, p_ones, width, label="Transmission ( |1⟩ State )", color="orange")
+    plt.bar(x - width / 2, p_zeros, width, label="Reflection ( |0⟩ State )", color="#A8DADC")
+    plt.bar(x + width / 2, p_ones, width, label="Transmission ( |1⟩ State )", color="#F4A261")
 
-    plt.xlabel("Qubits")
+    plt.xlabel("Qubit Index")
     plt.ylabel("Probability")
     plt.title("Quantum Scattering Probability Distribution")
     plt.xticks(x, [f"Qubit {q}" for q in qubits])
